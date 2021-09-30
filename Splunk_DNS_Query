@@ -1,0 +1,1 @@
+sourcetype="dns" (message_type=RESPONSE OR message_type=TXT) | rex field=query "(?<subdomain>.*?)\..*" | regex subdomain="^(([A-Za-z0-9+/]{4})+)$|^([A-Za-z0-9+/]{4})+(([A-Za-z0-9+/]{2}[AEIMQUYcgkosw048]=)|([A-Za-z0-9+/][AQgw]==)).*$" | stats count by subdomain
