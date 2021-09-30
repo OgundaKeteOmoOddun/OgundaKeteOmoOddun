@@ -1,0 +1,3 @@
+From the DC in charge of time:
+Open cmd as an Administrator
+run: w32tm /resync /discover
