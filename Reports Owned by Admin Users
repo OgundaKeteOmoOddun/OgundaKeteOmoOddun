@@ -1,0 +1,11 @@
+| rest /servicesNS/-/-/saved/searches splunk_server=local
+| where [|rest /services/authentication/users splunk_server=local | search roles="admin" |fields title | rename title as author] OR author="nobody" 
+| rename title AS savedsearch_name, eai:acl.app as app, eai:acl.perms.write as write_roles
+| table author write_roles splunk_server app savedsearch_name splunk_server
+| mvexpand write_roles
+| where NOT write_roles IN("","admin")
+| mvcombine write_roles
+| eval search_name_for_link=savedsearch_name
+| rex field=search_name_for_link mode=sed "s:%:%25:g s: :%20:g s:<:%3C:g s:>:%3E:g s:#:%23:g s:{:%7B:g s:}:%7D:g s:\|:%7C:g s:\\\:%5C:g s:\^:%5E:g s:~:%7E:g s:\[:%5B:g s:\]:%5D:g s:`:%60:g s:;:%3B:g s:/:%2F:g s:\?:%3F:g s/:/%3A/g s:@:%40:g s:=:%3D:g s:&:%26:g s:\$:%24:g s:\!:%21:g s:\*:%2A:g"
+| eval link="https://".splunk_server."/en-US/manager/".app."/admin/directory?ns=".app."&pwnr=-&app_only=1&search=".search_name_for_link
+| fields - search_name_for_link splunk_server
