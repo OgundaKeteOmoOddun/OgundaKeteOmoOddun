@@ -1,0 +1,20 @@
+C:\>w32tm /query /source
+Local CMOS Clock
+
+C:\>w32tm /config /syncfromflags:domhier /update
+The command completed successfully.
+
+C:\>net stop w32time && net start w32time
+The Windows Time service is stopping.
+The Windows Time service was stopped successfully.
+
+The Windows Time service is starting.
+The Windows Time service was started successfully.
+
+
+C:\>w32tm /query /source
+Local CMOS Clock
+
+C:\>w32tm /resync /rediscover
+Sending resync command to local computer
+The computer did not resync because no time data was available.
