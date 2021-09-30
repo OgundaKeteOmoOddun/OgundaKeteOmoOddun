@@ -1,0 +1,5 @@
+Remove-Item -Path "C:\ProgramFiles\SplunkUniversalForwarder\etc\apps\server_deploymentclient\deployment.conf" -Verbose 
+
+Copy-Item -Path \\servershare\Sources\Applications\Splunk\deploymentclient.conf -Destination "C:\ProgramFiles\SplunkUniversalForwarder\etc\apps\server_deploymentclient\deployment.conf"
+
+Restart-Service Splunkforwarder #/quiet
