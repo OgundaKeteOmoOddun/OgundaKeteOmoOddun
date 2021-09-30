@@ -1,0 +1,4 @@
+
+host=* | dedup index |table index
+1
+host=* | dedup index |table index
