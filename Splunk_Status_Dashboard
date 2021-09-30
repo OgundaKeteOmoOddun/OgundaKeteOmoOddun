@@ -1,0 +1,213 @@
+<form>
+  <label>Bucket Status</label>
+  <fieldset submitButton="false">
+    <input type="time" token="field1">
+      <label></label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="multiselect" token="hostpicker" searchWhenChanged="true">
+      <label>Which Host</label>
+      <choice value="*">All</choice>
+      <default>*</default>
+      <initialValue>*</initialValue>
+      <fieldForLabel>host</fieldForLabel>
+      <fieldForValue>host</fieldForValue>
+      <search>
+        <query>index=_internal sourcetype=splunkd component=BucketMover warm_to_cold idx!="_i*" idx!="_a*" Role=Indexer 
+| stats count by host 
+|  fields - count</query>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </search>
+      <delimiter>  OR host=</delimiter>
+    </input>
+    <input type="multiselect" token="idx_picker" searchWhenChanged="true">
+      <label>Which Index</label>
+      <choice value="*">All</choice>
+      <default>*</default>
+      <initialValue>*</initialValue>
+      <fieldForLabel>idx_name</fieldForLabel>
+      <fieldForValue>idx_name</fieldForValue>
+      <search>
+        <query>index=_internal sourcetype=splunkd component=BucketMover "*starting warm_to_cold*" OR "*freeze succeeded*"
+| rex field=event_message "indexes\/(?&lt;idx_name&gt;.+?(?=\/))"
+| stats count by idx_name 
+|  fields - count</query>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </search>
+      <delimiter>  OR idx_name=</delimiter>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Warm to Cold Timechart</title>
+      <chart>
+        <search>
+          <query>index=_internal sourcetype=splunkd component=BucketMover "*starting warm_to_cold*" host=$hostpicker$
+| rex field=event_message "indexes\/(?&lt;idx_name&gt;.+?(?=\/))"
+| search idx_name=$idx_picker$ NOT idx_name="_*"
+| timechart count by  idx_name</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">log</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Cold to Frozen Timechart</title>
+      <chart>
+        <search>
+          <query>index=_internal sourcetype=splunkd component=BucketMover "*will attempt to freeze*" host=$hostpicker$
+| rex field=event_message "indexes\/(?&lt;idx_name&gt;.+?(?=\/))"
+| search idx_name=$idx_picker$ NOT idx_name="_*"
+| timechart count by  idx_name</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Buckets moving from warm to cold</title>
+      <table>
+        <search>
+          <query>index=_internal sourcetype=splunkd component=BucketMover warm_to_cold idx!="_i*" idx!="_a*" host=$hostpicker$ 
+| rex field=event_message "indexes\/(?&lt;idx_name&gt;.+?(?=\/))"
+| search idx_name=$idx_picker$ NOT idx_name="_*"
+| stats count by  idx_name
+| sort - count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Buckets rolling to Frozen</title>
+      <table>
+        <search>
+          <query>index=_internal sourcetype=splunkd component=BucketMover candidate!="*_i*" candidate!="*_a*" host=$hostpicker$ "*will attempt to freeze*"
+| rex field=event_message "indexes\/(?&lt;idx_name&gt;.+?(?=\/))"
+| search idx_name=$idx_picker$ NOT idx_name="_*"
+| stats count by  idx_name
+| sort - count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Index, Host and Bucket</title>
+      <table>
+        <title>cold to frozen uses bkt, warm to cold uses bucket</title>
+        <search>
+          <query>index=_internal sourcetype=splunkd component=BucketMover "*starting warm_to_cold*" OR "*freeze succeeded*" host=$hostpicker$
+| rex field=event_message "indexes\/(?&lt;idx_name&gt;.+?(?=\/))"
+| fillnull value=NULL
+| search idx_name=$idx_picker$ NOT idx_name="_*"
+| eval Message=if(like(event_message, "%warm_to_cold%"), "Warm to Cold", "Cold to Frozen")
+| stats count by idx_name bucket bkt host Message| fields - count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">25</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>
